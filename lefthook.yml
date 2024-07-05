@@ -3,5 +3,5 @@ pre-commit:
   commands:
     eslint:
       glob: '*.{js,jsx,ts,tsx}'
-      run: npm run eslint
+      run: npm run eslint --fix {staged_files}
       stage_fixed: true
