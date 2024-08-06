@@ -2410,7 +2410,7 @@ export class TurnEndPhase extends FieldPhase {
   start() {
     super.start();
 
-    this.scene.currentBattle.incrementTurn(this.scene);
+    this.scene.currentBattle.incrementTurn();
     this.scene.eventTarget.dispatchEvent(new TurnEndEvent(this.scene.currentBattle.turn));
 
     const handlePokemon = (pokemon: Pokemon) => {

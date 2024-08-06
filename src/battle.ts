@@ -141,7 +141,7 @@ export default class Battle {
     return this.double ? 2 : 1;
   }
 
-  incrementTurn(scene: BattleScene): void {
+  incrementTurn(): void {
     this.turn++;
     this.turnCommands = Object.fromEntries(Utils.getEnumValues(BattlerIndex).map(bt => [ bt, null ]));
     this.battleSeedState = null;
