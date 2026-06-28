@@ -2250,8 +2250,8 @@ export abstract class PostSummonAbAttr extends AbAttr {
     return this.activateOnGain;
   }
 
-  canApply(_params: Closed<AbAttrBaseParams>): boolean {
-    return true;
+  canApply(params: AbAttrBaseParams): boolean {
+    return !params.pokemon.switchOutStatus;
   }
 
   apply(_params: Closed<AbAttrBaseParams>): void {}
