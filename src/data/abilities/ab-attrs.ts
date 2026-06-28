@@ -2273,8 +2273,8 @@ export class PostSummonRemoveArenaTagAbAttr extends PostSummonAbAttr {
     this.arenaTags = tagTypes;
   }
 
-  override canApply(_params: AbAttrBaseParams): boolean {
-    return globalScene.arena.hasTag(this.arenaTags);
+  override canApply(params: AbAttrBaseParams): boolean {
+    return super.canApply(params) && globalScene.arena.hasTag(this.arenaTags);
   }
 
   override apply({ simulated }: AbAttrBaseParams): void {
@@ -2355,8 +2355,8 @@ export class PostSummonAddBattlerTagAbAttr extends PostSummonAbAttr {
     this.turnCount = turnCount;
   }
 
-  override canApply({ pokemon }: AbAttrBaseParams): boolean {
-    return pokemon.canAddTag(this.tagType);
+  override canApply(params: AbAttrBaseParams): boolean {
+    return super.canApply(params) && params.pokemon.canAddTag(this.tagType);
   }
 
   override apply({ simulated, pokemon }: AbAttrBaseParams): void {
@@ -2382,8 +2382,8 @@ export class PostSummonRemoveBattlerTagAbAttr extends PostSummonRemoveEffectAbAt
     this.immuneTags = immuneTags;
   }
 
-  public override canApply({ pokemon }: AbAttrBaseParams): boolean {
-    return this.immuneTags.some(tagType => !!pokemon.getTag(tagType));
+  public override canApply(params: AbAttrBaseParams): boolean {
+    return super.canApply(params) && this.immuneTags.some(tagType => !!params.pokemon.getTag(tagType));
   }
 
   public override apply({ pokemon }: AbAttrBaseParams): void {
@@ -2454,8 +2454,8 @@ export class PostSummonAllyHealAbAttr extends PostSummonAbAttr {
     this.showAnim = showAnim;
   }
 
-  override canApply({ pokemon }: AbAttrBaseParams): boolean {
-    return pokemon.getAlly()?.isActive(true) ?? false;
+  override canApply(params: AbAttrBaseParams): boolean {
+    return super.canApply(params) && (params.pokemon.getAlly()?.isActive(true) ?? false);
   }
 
   override apply({ pokemon, simulated }: AbAttrBaseParams): void {
@@ -2481,8 +2481,8 @@ export class PostSummonAllyHealAbAttr extends PostSummonAbAttr {
  * whether this is a positive or negative change
  */
 export class PostSummonClearAllyStatStagesAbAttr extends PostSummonAbAttr {
-  override canApply({ pokemon }: AbAttrBaseParams): boolean {
-    return pokemon.getAlly()?.isActive(true) ?? false;
+  override canApply(params: AbAttrBaseParams): boolean {
+    return super.canApply(params) && (params.pokemon.getAlly()?.isActive(true) ?? false);
   }
 
   override apply({ pokemon, simulated }: AbAttrBaseParams): void {
@@ -2552,7 +2552,11 @@ export class PostSummonWeatherChangeAbAttr extends PostSummonAbAttr {
     this.weatherType = weatherType;
   }
 
-  override canApply(_params: AbAttrBaseParams): boolean {
+  override canApply(params: AbAttrBaseParams): boolean {
+    if (!super.canApply(params)) {
+      return false;
+    }
+
     const weatherReplaceable =
       this.weatherType === WeatherType.HEAVY_RAIN
       || this.weatherType === WeatherType.HARSH_SUN
@@ -2578,8 +2582,8 @@ export class PostSummonTerrainChangeAbAttr extends PostSummonAbAttr {
     this.terrainType = terrainType;
   }
 
-  override canApply(_params: AbAttrBaseParams): boolean {
-    return globalScene.arena.canSetTerrain(this.terrainType);
+  override canApply(params: AbAttrBaseParams): boolean {
+    return super.canApply(params) && globalScene.arena.canSetTerrain(this.terrainType);
   }
 
   override apply({ simulated, pokemon }: AbAttrBaseParams): void {
@@ -2602,8 +2606,12 @@ export class PostSummonHealStatusAbAttr extends PostSummonRemoveEffectAbAttr {
     this.immuneEffects = immuneEffects;
   }
 
-  public override canApply({ pokemon }: AbAttrBaseParams): boolean {
-    const status = pokemon.status?.effect;
+  public override canApply(params: AbAttrBaseParams): boolean {
+    if (!super.canApply(params)) {
+      return false;
+    }
+
+    const status = params.pokemon.status?.effect;
     const immuneEffects = this.immuneEffects;
     return status != null && (immuneEffects.length === 0 || immuneEffects.includes(status));
   }
@@ -2635,8 +2643,8 @@ export class PostSummonFormChangeAbAttr extends PostSummonAbAttr {
     this.formFunc = formFunc;
   }
 
-  override canApply({ pokemon }: AbAttrBaseParams): boolean {
-    return this.formFunc(pokemon) !== pokemon.formIndex;
+  override canApply(params: AbAttrBaseParams): boolean {
+    return super.canApply(params) && this.formFunc(params.pokemon) !== params.pokemon.formIndex;
   }
 
   override apply({ pokemon, simulated }: AbAttrBaseParams): void {
@@ -2658,8 +2666,12 @@ export class PostSummonCopyAbilityAbAttr extends PostSummonAbAttr {
   private target: Pokemon;
   private targetAbilityName: string;
 
-  override canApply({ pokemon, simulated }: AbAttrBaseParams): boolean {
-    const targets = pokemon
+  override canApply(params: AbAttrBaseParams): boolean {
+    if (!super.canApply(params)) {
+      return false;
+    }
+
+    const targets = params.pokemon
       .getOpponents()
       .filter(t => t.getAbility().copiable || t.getAbility().id === AbilityId.WONDER_GUARD);
     if (targets.length === 0) {
@@ -2668,7 +2680,7 @@ export class PostSummonCopyAbilityAbAttr extends PostSummonAbAttr {
 
     let target: Pokemon;
     // simulated call always chooses first target so as to not advance RNG
-    if (targets.length > 1 && !simulated) {
+    if (targets.length > 1 && !params.simulated) {
       target = targets[randSeedInt(targets.length)];
     } else {
       target = targets[0];
@@ -2710,8 +2722,12 @@ export class PostSummonUserFieldRemoveStatusEffectAbAttr extends PostSummonAbAtt
     this.statusEffect = statusEffect;
   }
 
-  override canApply({ pokemon }: AbAttrBaseParams): boolean {
-    const party = pokemon.isPlayer() ? globalScene.getPlayerField() : globalScene.getEnemyField();
+  override canApply(params: AbAttrBaseParams): boolean {
+    if (!super.canApply(params)) {
+      return false;
+    }
+
+    const party = params.pokemon.isPlayer() ? globalScene.getPlayerField() : globalScene.getEnemyField();
     return party.filter(p => p.isAllowedInBattle()).length > 0;
   }
 
@@ -2739,12 +2755,12 @@ export class PostSummonUserFieldRemoveStatusEffectAbAttr extends PostSummonAbAtt
 export class PostSummonCopyAllyStatsAbAttr extends PostSummonAbAttr {
   private ally: Pokemon;
 
-  override canApply({ pokemon }: AbAttrBaseParams): boolean {
-    if (!globalScene.currentBattle.double) {
+  override canApply(params: AbAttrBaseParams): boolean {
+    if (!super.canApply(params) || !globalScene.currentBattle.double) {
       return false;
     }
 
-    const ally = pokemon.getAlly();
+    const ally = params.pokemon.getAlly();
     if (!ally?.isActive(true)) {
       return false;
     }
@@ -2819,8 +2835,8 @@ export class PostSummonTransformAbAttr extends PostSummonAbAttr {
     return mon;
   }
 
-  override canApply({ pokemon }: AbAttrBaseParams): boolean {
-    return !!this.getTarget(pokemon);
+  override canApply(params: AbAttrBaseParams): boolean {
+    return super.canApply(params) && !!this.getTarget(params.pokemon);
   }
 
   override apply({ pokemon }: AbAttrBaseParams): void {
@@ -2833,8 +2849,8 @@ export class PostSummonTransformAbAttr extends PostSummonAbAttr {
  * Used by Cloud Nine and Air Lock.
  */
 export class PostSummonWeatherSuppressedFormChangeAbAttr extends PostSummonAbAttr {
-  override canApply(_params: AbAttrBaseParams): boolean {
-    return getPokemonWithWeatherBasedForms().length > 0;
+  override canApply(params: AbAttrBaseParams): boolean {
+    return super.canApply(params) && getPokemonWithWeatherBasedForms().length > 0;
   }
 
   /**
@@ -2855,10 +2871,13 @@ export class PostSummonFormChangeByWeatherAbAttr extends PostSummonAbAttr {
   /**
    * Determine if the pokemon has a forme change that is triggered by the weather
    */
-  override canApply({ pokemon }: AbAttrBaseParams): boolean {
-    return speciesDataRegistry
-      .getFormChanges(pokemon.species.speciesId)
-      .some(fc => fc.findTrigger(SpeciesFormChangeWeatherTrigger) && fc.canChange(pokemon));
+  override canApply(params: AbAttrBaseParams): boolean {
+    return (
+      super.canApply(params)
+      && speciesDataRegistry
+        .getFormChanges(params.pokemon.species.speciesId)
+        .some(fc => fc.findTrigger(SpeciesFormChangeWeatherTrigger) && fc.canChange(params.pokemon))
+    );
   }
 
   /**
@@ -5361,6 +5380,10 @@ export class PostSummonStatStageChangeOnArenaAbAttr extends PostSummonStatStageC
   }
 
   override canApply(params: AbAttrBaseParams): boolean {
+    if (!super.canApply(params)) {
+      return false;
+    }
+
     const side = params.pokemon.isPlayer() ? ArenaTagSide.PLAYER : ArenaTagSide.ENEMY;
     return (globalScene.arena.getTagOnSide(this.arenaTagType, side) ?? false) && super.canApply(params);
   }
