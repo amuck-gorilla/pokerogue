@@ -2820,9 +2820,7 @@ export class PostSummonTransformAbAttr extends PostSummonAbAttr {
   }
 
   override canApply({ pokemon }: AbAttrBaseParams): boolean {
-    const target = this.getTarget(pokemon);
-
-    return !!target;
+    return !!this.getTarget(pokemon);
   }
 
   override apply({ pokemon }: AbAttrBaseParams): void {
